@@ -1,0 +1,598 @@
+CREATE TABLE SO_Market (
+    MarketID INT PRIMARY KEY,
+    MarketName VARCHAR(100)
+);
+
+CREATE TABLE SO_Region (
+    RegionID INT PRIMARY KEY,
+    RegionName VARCHAR(100)
+);
+
+CREATE TABLE SO_Customer (
+    CustomerID INT PRIMARY KEY,
+    CustName VARCHAR(100),
+    MarketID INT,
+    RegionID INT,
+    FOREIGN KEY (MarketID) REFERENCES SO_Market(MarketID),
+    FOREIGN KEY (RegionID) REFERENCES SO_Region(RegionID)
+);
+
+CREATE TABLE SO_ProdFamily (
+    ProdFamilyID INT PRIMARY KEY,
+    ProdFamily VARCHAR(50)
+);
+
+CREATE TABLE SO_Product (
+    ProductID INT PRIMARY KEY,
+    ProductName VARCHAR(100),
+    UnitPrice DECIMAL(5,2),
+    ProdFamilyID INT,
+    FOREIGN KEY (ProdFamilyID) REFERENCES SO_ProdFamily(ProdFamilyID)
+);
+
+CREATE TABLE SO_Manager (
+    ManagerID INT PRIMARY KEY,
+    ManagerName VARCHAR(50),
+    Commissions INT
+);
+
+CREATE TABLE SO_Agent (
+    AgentID INT PRIMARY KEY,
+    AgentName VARCHAR(50),
+    ManagerID INT,
+    FOREIGN KEY (ManagerID) REFERENCES SO_Manager(ManagerID)
+);
+
+CREATE TABLE SO_Order (
+    OrderID INT PRIMARY KEY,
+    OrderDate DATE,
+    OrderQty INT,
+    AgentID INT,
+    ProductID INT,
+    CustomerID INT,
+    FOREIGN KEY (AgentID) REFERENCES SO_Agent(AgentID),
+    FOREIGN KEY (ProductID) REFERENCES SO_Product(ProductID),
+    FOREIGN KEY (CustomerID) REFERENCES SO_Customer(CustomerID)
+);
+
+Create Employee & Department Tables and Populate
+create table  Department(
+ DepID int Primary Key,
+ DepName varchar(25) Not Null Default 'Department'
+);
+Create table Employee (
+EmpId int Primary Key,
+EmpName varchar(100),
+StartYear int,
+EndYear int,
+StartSalary Float,
+CurrentSalary Float,
+EndSalary Float,
+DepId int Not Null,
+FOREIGN KEY (DepID) REFERENCES Department(DepID )
+);
+
+INSERT INTO Department values (1,'Department' ), (2,'HR' ), (3 ,'IT' ),(4 ,'Sales' );
+INSERT INTO Employee (EmpId, DepId, EmpName, StartYear, EndYear, StartSalary, CurrentSalary, EndSalary ) 
+VALUES 
+(1,1,"Bill Gates", 2000,NULL, 310000.00, 310000.00,NULL),
+(2,1,"John Lenon", 2000,NULL, 110000.00,110000.00,NULL),
+(3,2,"Haily Anderson", 2010,NULL, 90000.00, 90000.00,NULL),
+(4,2,"Nicolaus  Michelson", 2009,NULL, 95000.00, 95000.00,NULL),
+(5,2,"Rebecca  Michelson", 2010,NULL, 85000.00, 85000.00,NULL),
+(6,3,"Elena Gilbert", 2010,NULL, 55000.00, 55000.00,NULL),
+(7,3,"John Smith", 2010,NULL, 65000.00, 65000.00,NULL),
+(8,3,"Alex Red", 20013,NULL, 68000.00, 68000.00,NULL),
+(9,3,"Richard Blue", 2013,NULL, 1198000.00, 1198000.00,NULL),
+(10,3,"Edward Cullen", 2013,NULL, 1298000.00, 1298000.00,NULL);
+
+
+SELECT * FROM SO_Employee WHERE EmployeeName LIKE 'R%';
+
+
+SELECT COUNT(*) AS TotalRecords FROM SO_Employee;
+
+
+SELECT *
+FROM SO_Employee
+WHERE StartYear > 2010
+ORDER BY StartSalary DESC;
+
+
+SELECT DepID, SUM(StartSalary) AS TotalStartSalary FROM SO_Employee GROUP BY DepID;
+SELECT d.DepName, e.EmployeeName
+FROM SO_Department d
+JOIN SO_Employee e ON d.DepID = e.DepID;
+      
+INSERT INTO SO_Department (DepName) VALUES ('Accounting');
+
+INSERT INTO SO_Employee (EmployeeName, DepID, StartYear, StartSalary, CurrentSalary) 
+VALUES ('Brian Latona', (SELECT DepID FROM SO_Department WHERE DepName = 'Sales'), 2014, 120000.00, 120000.00);
+
+INSERT INTO SO_Employee (EmployeeName, DepID, StartYear, StartSalary, CurrentSalary) 
+VALUES 
+('Meredith Whitney', (SELECT DepID FROM SO_Department WHERE DepName = 'Accounting'), 2011, 350000.00, 350000.00),
+('Mario Gabelli', (SELECT DepID FROM SO_Department WHERE DepName = 'Accounting'), 2011, 420000.00, 420000.00);
+
+UPDATE SO_Employee
+SET EndYear = 2013, EndSalary = CurrentSalary + 3000.00
+WHERE EmployeeName = 'Haily Anderson';
+
+UPDATE SO_Employee
+SET CurrentSalary = CurrentSalary * 1.06
+WHERE DepID = 2;
+
+SELECT d.DepName, SUM(e.CurrentSalary) AS TotalCurrentSalary
+FROM SO_Department d
+JOIN SO_Employee e ON d.DepID = e.DepID
+GROUP BY d.DepName;
+
+SELECT d.DepName, COUNT(e.EmployeeID) AS NumberOfEmployees
+FROM SO_Department d
+JOIN SO_Employee e ON d.DepID = e.DepID
+GROUP BY d.DepName;
+
+SELECT d.DepName, SUM(e.CurrentSalary) AS TotalCurrentSalary
+FROM SO_Department d
+JOIN SO_Employee e ON d.DepID = e.DepID
+GROUP BY d.DepName
+HAVING SUM(e.CurrentSalary) > 500000.00;
+
+
+CREATE VIEW Week5_DepartmentEmployee_vi AS
+SELECT 
+    d.DepID, 
+    d.DepName, 
+    e.EmployeeID, 
+    e.EmployeeName, 
+    e.StartSalary, 
+    e.CurrentSalary, 
+    (e.CurrentSalary - e.StartSalary) AS Promoted, 
+    e.EndSalary
+FROM 
+    SO_Department d
+JOIN 
+    SO_Employee e ON d.DepID = e.DepID;
+
+
+SELECT * FROM Week5_DepartmentEmployee_vi;
+
+
+Create table EmployeePet
+( PetID int Primary Key,
+   PetName varchar(20) NOT NULL,
+  PetType varchar(20) ,
+  EmpID int NOT NULL,
+  Foreign Key (EmpID) References Employee(EmpID)
+);
+insert into EmployeePet (PetID,PetName,PetType,EmpID)  Values
+( 1, "Masha","Cat", 2), ( 2, "Misha","Cat", 2),( 3, "Ms. Piggy","Pig", 5),
+( 4, "Candy","Monkey", 10), ( 5, "George","Monkey", 10), ( 6, "Harry","Monkey", 10);
+
+SELECT 
+    d.DepName, 
+    e.EmployeeName, 
+    p.PetName
+FROM 
+    SO_Department d
+JOIN 
+    SO_Employee e ON d.DepID = e.DepID
+LEFT JOIN 
+    SO_Pet p ON e.EmployeeID = p.EmployeeID;
+
+UPDATE SO_Pet
+SET PetName = 'Cake'
+WHERE PetName = 'Candy The Monkey';
+
+UPDATE SO_Pet
+SET PetID = PetID * 10
+WHERE PetName = 'Misha The Cat';
+
+SELECT EmployeeName
+FROM SO_Employee
+WHERE EmployeeID IN (SELECT EmployeeID FROM SO_Pet);
+
+SELECT e.EmployeeName
+FROM SO_Employee e
+WHERE NOT EXISTS (SELECT 1 FROM SO_Pet p WHERE p.EmployeeID = e.EmployeeID);
+
+SELECT p.PetName
+FROM SO_Pet p
+WHERE p.EmployeeID IN (
+    SELECT e.EmployeeID
+    FROM SO_Employee e
+    JOIN SO_Department d ON e.DepID = d.DepID
+    WHERE d.DepName = 'HR'
+);
+
+SELECT EmployeeName
+FROM SO_Employee
+WHERE EmployeeID IN (SELECT EmployeeID FROM SO_Pet);
+
+
+INSERT INTO `SO_Manager` (`ManagerID`, `ManagerName`, `Commissions`) VALUES
+(1, 'Rajesh', 11),
+(2, 'Priya', 15),
+(3, 'Anjali', 11),
+(4, 'Pranil', 20),
+(5, 'Suvash', 16);
+
+
+INSERT INTO `SO_Agent` (`AgentID`, `AgentName`, `ManagerID`) VALUES
+(101, 'Amit', 2),
+(102, 'Ravi', 3),
+(103, 'Suresh', 4),
+(104, 'Rohan', 2),
+(105, 'Vikram', 1),
+(106, 'Ajay', 3),
+(107, 'Sunil', 1),
+(108, 'Arjun', 4),
+(109, 'Manoj', 1),
+(110, 'Raj', 5);
+
+INSERT INTO `SO_ProdFamily` (`ProdFamilyID`, `ProdFamily`) VALUES
+(1, 'Kitchen'),
+(2, 'LivingRoom'),
+(3, 'Bedroom'),
+(4, 'Restroom'),
+(5, 'Backyard');
+
+INSERT INTO `SO_Product` (`ProductID`, `ProductName`, `UnitPrice`, `ProdFamilyID`) VALUES
+(1, 'Cooktop', 500.00, 1),
+(2, 'Bed Sheets', 450.00, 3),
+(3, 'Grill', 100.00, 5),
+(4, 'Toilet Paper', 320.00, 1),
+(5, 'Chairs', 280.00, 5),
+(6, 'Pillows', 256.00, 3),
+(7, 'Couch', 90.00, 2),
+(8, 'CoffeeTable', 45.00, 2),
+(9, 'Mirror', 15.00, 4),
+(10, 'Umbrella', 10.00, 5);
+
+INSERT INTO `SO_Region` (`RegionID`, `RegionName`) VALUES
+(1, 'NorthWest'),
+(2, 'SouthWest'),
+(3, 'MidWest'),
+(4, 'South'),
+(5, 'East');
+
+INSERT INTO `SO_Market` (`MarketID`, `MarketName`) VALUES
+(1, 'Healthcare'),
+(2, 'Finance'),
+(3, 'Manufacturing'),
+(4, 'Decor'),
+(5, 'Transportation');
+
+INSERT INTO `SO_Customer` (`CustomerID`, `CustName`, `MarketID`, `RegionID`) VALUES
+(1001, 'Rahul', 5, 2),
+(1002, 'Sneha', 4, 3),
+(1003, 'Akash', 3, 1),
+(1004, 'Neha', 3, 4),
+(1005, 'Diya', 5, 1),
+(1006, 'Priya', 2, 5),
+(1007, 'Astha', 1, 5),
+(1008, 'Asma', 1, 4),
+(1009, 'Chasma', 1, 4),
+(1010, 'Lama', 2, 3);
+
+INSERT INTO `SO_Order` (`OrderID`, `OrderDate`, `OrderQty`, `AgentID`, `ProductID`, `CustomerID`) VALUES
+(44739661, '2010-01-01', 5, 108, 1, 1001),
+(44739662, '2010-01-01', 4, 102, 2, 1003),
+(44739663, '2012-01-30', 3, 107, 3, 1009),
+(44739664, '2012-01-15', 3, 109, 5, 1009),
+(44739665, '2012-01-17', 2, 101, 6, 1002),
+(44739666, '2012-01-16', 1, 103, 6, 1004),
+(44739667, '2010-02-13', 2, 101, 6, 1006),
+(44739668, '2015-02-10', 4, 103, 7, 1006),
+(44739669, '2015-02-02', 20, 110, 7, 1006),
+(44739670, '2017-02-09', 5, 107, 7, 1003),
+(44739671, '2017-03-08', 3, 109, 7, 1003),
+(44739672, '2018-03-10', 5, 103, 4, 1001),
+(44739673, '2018-03-13', 6, 101, 3, 1004),
+(44739674, '2018-03-13', 6, 106, 5, 1002),
+(44739675, '2016-03-11', 7, 107, 4, 1001),
+(44739676, '2017-04-02', 7, 110, 4, 1004),
+(44739677, '2017-04-09', 6, 106, 3, 1004),
+(44739678, '2017-04-12', 7, 107, 5, 1007),
+(44739679, '2015-04-03', 2, 109, 5, 1009),
+(44739680, '2018-05-01', 2, 101, 5, 1007),
+(44739681, '2017-05-20', 5, 101, 5, 1007),
+(44739682, '2012-05-21', 6, 101, 5, 1007),
+(44739683, '2012-06-22', 10, 102, 5, 1007),
+(44739684, '2017-06-23', 15, 103, 5, 1007),
+(44739685, '2012-06-25', 5, 104, 5, 1007);
+
+
+CREATE TABLE re_State ( StateID INT AUTO_INCREMENT PRIMARY KEY, 
+StateName Char(30)); 
+
+CREATE TABLE re_City ( CityID INT AUTO_INCREMENT PRIMARY KEY, 
+City Varchar(50), 
+StateID INT NOT NULL, 
+FOREIGN KEY (StateID) REFERENCES re_State(StateID)); 
+
+CREATE TABLE re_Zip ( ZipID INT AUTO_INCREMENT PRIMARY KEY, 
+ZipCode varchar(50), 
+CityID INT NOT Null, 
+FOREIGN KEY (CityID) REFERENCES re_City(CityID)); 
+
+CREATE TABLE re_HouseType ( HouseTypeID INT AUTO_INCREMENT PRIMARY KEY, HouseType Varchar(20)); 
+
+CREATE TABLE re_House ( HouseID INT AUTO_INCREMENT PRIMARY KEY,     
+HouseName Varchar(20),  
+HouseTypeID INT NOT Null, 
+ZipID INT,
+FOREIGN KEY (ZipID) REFERENCES re_Zip(ZipID), 
+FOREIGN KEY (HouseTypeID) REFERENCES re_HouseType(HouseTypeID) ); 
+
+
+CREATE TABLE re_Sales ( Sales INT AUTO_INCREMENT PRIMARY KEY, 
+SalesDate Date, 
+SalesPrice INT, 
+HouseID INT NOT Null, 
+FOREIGN KEY (HouseID) REFERENCES re_House(HouseID) );
+
+Select 
+s.SalesOrderDate, s.SaleOrderID,  s.Quantity,
+m.MarketName, r.RegionName ,c.CustomerName, 
+p.ProductName, f.ProductFamilyName,
+a.AgentName, mm.ManagerName, mm.Commissions,
+p.UnitPrice * s.Quantity as OrderAmount, 
+p.UnitPrice * s.Quantity  * mm.PcntCommissions *0.01 as OrderCommissionsAmmount
+FROM  SalesOrder s, Customer c, Market m, Region r, Product p, ProductFamily f, 
+             Agent a, Manager mm 
+WHERE
+c.MarketID = m.MarketID and
+c.RegionID = r.RegionID and
+c.CustomerID = s.CustomerID and 
+s.ProductID= p.ProductID and
+p.ProductFamilyID = f.ProductFamilyID and
+s.AgentID = a.AgentID and
+a.ManagerID = mm.ManagerID ;
+
+
+create table week7_region ( RegName varchar(20));
+insert into week7_region values ( 'East'),('West'),('South'),('North');
+create table week7_company (CompName varchar(20));
+insert into week7_company values ( 'ABC'),('IBM'),('Intel'),('Whole Food'),'(Lucky');
+Create table week7_car ( Car varchar(20));
+
+
+Alter table week7_car add car_id int not null; Alter table week7_car add Primary Key(car_id),
+
+ALTER TABLE week7_region ADD MapColor varchar(20)
+
+ALTER TABLE week7_region ADD RegionID INT NOT NULL AUTO_INCREMENT, ADD PRIMARY KEY (RegionID);
+
+ALTER TABLE week7_region add region_id INT Primary key AUTO_INCREMENT;
+
+
+
+SELECT * FROM `ARTIST` LIMIT 0, 500 ;
+
+create table week8_test as select * from  week7lab.Flight;
+---------------
+create table week8_test2  like week7lab.Flight
+
+Insert into week8_test2 select * from week7lab.Flight;
+
+----------------
+create table week8_test3 (
+AirportID INT Primary key, 
+AirportCode varchar(10)
+);
+
+
+create table week8_test4 (
+AirportID INT Primary key Auto_Increment, 
+AirportCode varchar(10)
+); 
+
+insert into week8_test4 (AirportCode) 
+select   AirportCode 
+from  week7lab.Flight;
+
+
+select distinct state from FP_RealEstate.realestate;
+
+insert into re_State(StateName)
+select distinct state from FP_RealEstate.realestate;
+
+insert into re_City(StateID, CityName)
+SELECT distinct s.StateID, r.city
+FROM re_State s, FP_RealEstate.realestate r
+where s.StateName = r.state;
+
+insert into re_Zip(ZipCode,CityID)
+select distinct zip, CityID
+from re_City, FP_RealEstate.realestate
+where FP_RealEstate.realestate.city= re_City.CityName;
+
+
+insert into re_House ( HouseTypeID, ZipID,HouseName )
+
+SELECT distinct HouseTypeID,ZipID,street
+FROM re_Zip  ,
+           re_HouseType ,
+           FP_RealEstate.realestate 
+WHERE
+re_Zip.ZipCode= FP_RealEstate.realestate.zip
+And re_HouseType.HouseTypeName=FP_RealEstate.realestate.type
+
+  
+ Insert into 
+re_Sales (SalesPrice,SalesDate, HouseID)
+
+Select 
+Replace (price, '"',''), sale_date, HouseID
+ 
+From  
+re_House, FP_RealEstate.realestate
+   
+  Where 
+FP_RealEstate.realestate.street = re_House.HouseName
+
+
+SELECT 
+    YEAR(OrderDate) AS Year,
+    SUM(OrderAmount) AS TotalSalesAmount
+FROM 
+    Week6_sales_vi
+GROUP BY 
+    YEAR(OrderDate);
+
+
+SELECT 
+    YEAR(OrderDate) AS Year,
+    ProductName AS ProductFamilyDescription,
+    SUM(OrderAmount) AS TotalSalesAmount
+FROM 
+    Week6_sales_vi
+GROUP BY 
+    YEAR(OrderDate),
+    ProductName;
+
+SELECT 
+    YEAR(OrderDate) AS Year,
+    ProdFamily AS ProductFamilyDescription,
+    ProductName,
+    SUM(OrderAmount) AS TotalSalesAmount
+FROM 
+    Week6_sales_vi
+GROUP BY 
+    YEAR(OrderDate),
+    ProdFamily,
+    ProductName;
+
+
+SELECT 
+    YEAR(OrderDate) AS Year,
+    ManagerName,
+    SUM(OrderAmount) AS TotalSalesAmount,
+    SUM(OrderCommissionsAmount) AS TotalCommissionsAmount
+FROM 
+    Week6_sales_vi
+GROUP BY 
+    YEAR(OrderDate),
+    ManagerName;
+
+
+SELECT 
+    YEAR(OrderDate) AS Year,
+    ManagerName,
+    AgentName,
+    SUM(OrderAmount) AS TotalSalesAmount,
+    SUM(OrderCommissionsAmount) AS TotalCommissionsAmount
+FROM 
+    Week6_sales_vi
+GROUP BY 
+    YEAR(OrderDate),
+    ManagerName,
+    AgentName;
+
+
+
+Update re_Sales 
+set SalesDate = "2008-05-21",  SalesPrice = replace(SalesPrice,'"','') ;
+
+Alter table re_Sales      
+CHANGE SalesDate SalesDate Date, 
+CHANGE SalesPrice SalesPrice INT;
+
+
+UPDATE re_Sales
+SET SalesDate = DATE_ADD(SalesDate, INTERVAL 60 MONTH)
+WHERE YEAR(SalesDate) = 2008
+LIMIT 200;
+
+UPDATE re_Sales
+SET SalesDate = DATE_ADD(SalesDate, INTERVAL 75 MONTH)
+WHERE YEAR(SalesDate) = 2008
+LIMIT 150;
+
+UPDATE re_Sales
+SET SalesDate = DATE_SUB(SalesDate, INTERVAL 8 YEAR)
+WHERE YEAR(SalesDate) = 2008
+LIMIT 170;
+
+UPDATE re_Sales
+SET SalesDate = DATE_SUB(SalesDate, INTERVAL 5 YEAR)
+WHERE YEAR(SalesDate) = 2008
+LIMIT 300;
+
+SELECT YEAR(SalesDate) AS Year, COUNT(*) AS Count
+FROM re_Sales
+GROUP BY YEAR(SalesDate);
+
+
+
+
+CREATE View WEEK11_LAB_REALESTATE as 
+SELECT 
+HouseName, 
+HouseTypeName,
+ZipCode, 
+CityName as CityName, 
+StateName, 
+SalesDate, 
+SalesPrice 
+FROM 
+re_Sales s, 
+re_City c, 
+re_House h, 
+re_HouseType t, 
+re_State s1, 
+re_Zip z 
+where
+z.ZipID = h.ZipID AND
+c.CityID = z.CityID AND 
+c.StateID = s1.StateID AND
+t.HouseTypeID = h.HouseTypeID AND
+h.HouseID = s.HouseID;
+
+CREATE table Week12_TestData  as select * from week11lab.orders;
+
+ALTER table Week12_TestData add Primary Key ( orderNumber );
+
+
+CREATE  table Week12_TestData_wrk  as  select * from Week12_TestData;
+
+UPDATE Week12_TestData_wrk
+SET 
+    orderNumber = orderNumber + 500,
+    orderDate = DATE_ADD(orderDate, INTERVAL 7 YEAR),
+    requiredDate = DATE_ADD(requiredDate, INTERVAL 7 YEAR),
+    shippedDate = DATE_ADD(shippedDate, INTERVAL 7 YEAR),
+	customerNumber= Rand()*100+100;
+Insert into Week12_TestData  select * from Week12_TestData_wrk ;
+
+UPDATE Week12_TestData_wrk
+SET 
+    orderNumber = orderNumber + 500,
+    orderDate = DATE_ADD(orderDate, INTERVAL 6 YEAR),
+    requiredDate = DATE_ADD(requiredDate, INTERVAL 6 YEAR),
+    shippedDate = DATE_ADD(shippedDate, INTERVAL 6 YEAR),
+	customerNumber= Rand()*100+100;
+Insert into Week12_TestData  select * from Week12_TestData_wrk ;
+UPDATE Week12_TestData_wrk
+SET 
+    orderNumber = orderNumber + 500,
+    orderDate = DATE_ADD(orderDate, INTERVAL 5 YEAR),
+    requiredDate = DATE_ADD(requiredDate, INTERVAL 5 YEAR),
+    shippedDate = DATE_ADD(shippedDate, INTERVAL 5 YEAR),
+	customerNumber= Rand()*100+100;
+
+Insert into Week12_TestData  select * from Week12_TestData_wrk ;
+
+UPDATE Week12_TestData_wrk
+SET 
+    orderNumber = orderNumber + 500,
+    orderDate = DATE_ADD(orderDate, INTERVAL 3 YEAR),
+    requiredDate = DATE_ADD(requiredDate, INTERVAL 3 YEAR),
+    shippedDate = DATE_ADD(shippedDate, INTERVAL 3 YEAR),
+	customerNumber= Rand()*100+100;
+
+Insert into Week12_TestData  select * from Week12_TestData_wrk ;
+
+SELECT count( distinct year(orderDate) ) FROM  Week12_TestData ;
+
